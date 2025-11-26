@@ -1,4 +1,4 @@
-import {createContext, useState,useEffect} from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import { onAuthStateChanged, signInAnonymously} from '@react-native-firebase/auth';
 import {doc, getDoc, setDoc, updateDoc} from '@react-native-firebase/firestore';
 import {auth, db, serverTimestamp} from '@react-native-firebase/firestore';
@@ -39,9 +39,48 @@ export function AuthProvider({children}){
 
   return unsubscribe;
   }, []);
+  const createProfile = async (username) => {
+    if (!user) throw new Error('User does not exist');
 
+    const newProfile = {
+      userid : user.uid,
+      publicUsername: username,
+      topic: "Technology", // default topic
+      gemini_settings: { // default gemini prompt
+        tone: "Informative",
+        format: 'Concise'
+      },
+      createdAt: serverTimestamp(),
+    };
 
+    const userRef = doc(db, 'profiles', user.uid);
+    await setDoc(userRef, newProfile);
+    setProfile(newProfile);
+  };
+
+  const updateProfile = async (data) => {
+    if (!user) return;
+
+    const userRef = doc(db, 'profiles', user.uid);
+    await updateDoc(userRef, data);
+    setProfile(prev => ({ ...prev, ...data }));
+  }
+
+  return (
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      loading,
+      isNewUser,
+      createProfile,
+      updateProfile,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  )
 
 }
+
+export const useAuth = () => useContext(AuthContext);
 
 
