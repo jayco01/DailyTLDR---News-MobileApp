@@ -23,6 +23,13 @@ export function AuthProvider({children}){
         try{ // check if user exist in the database
           const userRef = doc(db, 'profile', currentUser.uid);
           const snapShot = await getDoc(userRef);
+
+          if (snapShot.exists) {
+            setProfile(snapShot.data());
+          } else {
+            setProfile(null);
+          }
+
         } catch (e) {
           console.error(`Anonymous Authentication Failed - ${e}`);
         }
