@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1063391785454",
+    "project_id": "dailytldr-official-3b63f",
+    "storage_bucket": "dailytldr-official-3b63f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1063391785454:android:2626fa9b1e97c39b691eff",
+        "android_client_info": {
+          "package_name": "com.dailytldr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhqkoy4mk_MwmaceqXYwHGeVdEQ84g7fE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
