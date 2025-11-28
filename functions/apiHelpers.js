@@ -46,11 +46,43 @@ const getArticles = async (topic) => {
   }
 }
 
-// handle NesAPI and FireCrawl logic
-module.exports = {
-}
+// scrape articles content using firecrawl
 
-// Handle Gemini logic
-module.exports = {
+const scrapeArticles = async (url) => {
+  const apiKey = process.env.FIRECRAWL_API_KEY;
 
+  if(!apiKey) {
+    logger.warn('Missing FIRECRAWL_API_KEY - Skipping the Scrapping Step');
+    return null;
+  }
+
+  try {
+    const response = await axios.post(
+      'https://api.firecrawl.dev/v2/scrape',
+      {
+        url: url,
+        formats: ['markdown'],
+        onlyMainContent: true,
+        timeout: 15000 // this will allow the scraping to fail fast so it does not hang the entire digest generation
+      }, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if(response.data && response.data.success) {
+      return response.data.data.markdown;
+    }
+
+    return null;
+  }catch (e) {
+    logger.warn(`Could not scrape articles from: ${url}`, e.message);
+    return null;
+  }
+};
+
+module.exports = {
+  getArticles, scrapeArticles
 }
