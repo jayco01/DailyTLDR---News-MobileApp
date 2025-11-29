@@ -2,17 +2,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useContext, useState } from 'react';
 import { Text, ActivityIndicator, StyleSheet, Button, View} from 'react-native';
 import {AuthProvider, AuthContext} from './src/contexts/AuthContext';
+import {Alert, ScrollView} from "react-native";
+import {triggerManualDigest, getLatestDigest} from "./src/services/DigestService";
 
 const AuthStatus = () => {
   const {user, profile, loading, isNewUser, createProfile} = useContext(AuthContext);
   const [isCreating, setIsCreating] = useState(false);
+  const [digestData, setDigestData] = useState(null);
+  const [generating, setGenerating] = useState(false);
 
   const handleCreate = async () => {
+    if(!user) return;
+
     setIsCreating(true);
+
     try {
-      await createProfile("Jester-Tester")
+      console.log("triggering cloud functions...")
+      await triggerManualDigest();
+
+      console.log("Fetching new data...")
+      const data = await getLatestDigest(user.uid);
+
+      setDigestData(data);
+
     } catch (e) {
-      console.error("Error creating user", e);
+      Alert.alert("Error", "Generation failed. Check console for Index Link.");
     }
     setIsCreating(false);
   }
