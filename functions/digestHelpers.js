@@ -1,26 +1,26 @@
-const { GoogleGenAi, SchemaType } = require("@google/genai");
+const { GoogleGenAI, Type } = require("@google/genai");
 const logger = require("firebase-functions/logger");
 
-const genAI = GoogleGenAi({apiKey: process.env.GEMINI_API_KEY});
+const genAI = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY});
 
 // keep it generic so it does not conflict with user settings
 const digestSchema = {
-  type: SchemaType.OBJECT,
+  type: Type.OBJECT,
   properties: {
     headline: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "A short, catchy headline for the article.",
     },
     key_takeaway: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "The single most important fact or insight (1 sentence).",
     },
     synopsis: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "The main body/summary of the article.",
     },
     sentiment: { // this is different from tone
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "The sentiment classification.",
       enum: ["Positive", "Neutral", "Negative", "Controversial"],
     },
