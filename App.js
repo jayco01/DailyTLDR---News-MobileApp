@@ -1,9 +1,10 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useContext, useState } from 'react';
-import { Text, ActivityIndicator, StyleSheet, Button, View} from 'react-native';
+import { Text, ActivityIndicator, StyleSheet, Button, View , FlatList} from 'react-native';
 import {AuthProvider, AuthContext} from './src/contexts/AuthContext';
 import {Alert, ScrollView} from "react-native";
 import {triggerManualDigest, getLatestDigest} from "./src/services/DigestService";
+import ArticleCard from "./src/components/ArticleCard"
 
 const AuthStatus = () => {
   const {user, profile, loading, isNewUser, createProfile} = useContext(AuthContext);
@@ -84,15 +85,19 @@ const AuthStatus = () => {
 
       {/* RESULT DISPLAY */}
       {digestData && (
-        <ScrollView style={styles.resultBox}>
-          <Text style={styles.resultHeader}>Latest Digest Loaded!</Text>
-          <Text style={{ marginBottom: 10 }}>Topic: {digestData.topic}</Text>
+        <View style={{ flex: 1, marginTop: 20 }}>
+          <Text style={styles.resultHeader}>
+            Morning Brief: {digestData.topic}
+          </Text>
 
-          <Text style={styles.subHeader}>Key Takeaways:</Text>
-          {digestData.overall_key_takeaways && digestData.overall_key_takeaways.map((point, index) => (
-            <Text key={index} style={styles.bulletPoint}>• {point}</Text>
-          ))}
-        </ScrollView>
+          <FlatList
+            data={digestData.article_sections}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => <ArticleCard article={item} />}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       )}
     </SafeAreaView>
   );
