@@ -1,171 +1,107 @@
-import { useContext, useState } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
-import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { getLatestDigest, triggerManualDigest } from '../services/DigestService';
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, Alert, TextInput} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../theme/colors';
+import { AuthContext } from '../contexts/AuthContext';
 import AppButton from '../components/AppButton';
+import { colors } from '../theme/colors';
 
 const WelcomeSetupPage = () => {
-  const {user, profile, loading, isNewUser, createProfile} = useContext(AuthContext);
-  const [isCreating, setIsCreating] = useState(false);
-  const [digestData, setDigestData] = useState(null);
-  const [generating, setGenerating] = useState(false);
+  const { createProfile } = useContext(AuthContext);
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleCreate = async () => {
-    setIsCreating(true);
-    try {
-      await createProfile("Jester-Tester");
-    } catch (e) {
-      console.error(e);
-      Alert.alert("Error", "Could not create profile.");
+  const handleSetup = async () => {
+    if (username.length < 3) {
+      Alert.alert("Invalid Input", "Username must be at least 3 characters.");
+      return;
     }
-    setIsCreating(false);
+
+    setLoading(true);
+    try {
+      await createProfile(username);
+
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not create profile. Try again.");
+    }
+    setLoading(false);
   };
 
-  const handleGenerate = async () => {
-    if(!user) return;
-
-    setGenerating(true);
-    setDigestData(null);
-
-    try {
-      console.log("triggering cloud functions...")
-      await triggerManualDigest();
-
-      console.log("Fetching new data...")
-      const data = await getLatestDigest(user.uid);
-
-      console.log("Data Received:", data);
-
-      setDigestData(data);
-
-    } catch (e) {
-      Alert.alert("Error", "Generation failed. Check console for Index Link.");
-    }
-    setGenerating(false);
-  }
-
-  if (loading) return <ActivityIndicator size="large" color="blue" />
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER CARD */}
-      <View style={styles.headerCard}>
-        <Text style={styles.appTitle}>Daily TLDR</Text>
+      <View style={styles.content}>
+        <Text style={styles.title}>Welcome to Daily TL;DR</Text>
+        <Text style={styles.subtitle}>
+          Your personalized, distraction-free news digest. Let's get you set up.
+        </Text>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>User Status:</Text>
-          <Text style={styles.value}>{isNewUser ? 'Needs Profile' : 'Active'}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Topic:</Text>
-          <Text style={styles.value}>{profile ? profile.topic : '---'}</Text>
-        </View>
-      </View>
-
-      {/* ACTION AREA */}
-      <View style={styles.actionContainer}>
-        {isNewUser ? (
-          <AppButton
-            title="Create User Profile"
-            onPress={handleCreate}
-            loading={isCreating}
+        <View style={styles.form}>
+          <Text style={styles.label}>Choose a Username</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. JohnDoe99"
+            placeholderTextColor="#999"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
           />
-        ) : (
+
           <AppButton
-            title={generating ? "AI is Reading News..." : "Generate Daily Digest"}
-            onPress={handleGenerate}
-            loading={generating}
+            title="Start Reading"
+            onPress={handleSetup}
+            loading={loading}
           />
-        )}
+        </View>
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
+  container:
+    {
+      flex: 1,
+      backgroundColor: colors.background
+    },
+  content: {
     flex: 1,
-    padding: 20,
-    backgroundColor: colors.background,
+    justifyContent: 'center',
+    padding: 30
   },
-  headerCard: {
+  title: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: colors.darkest,
+    marginBottom: 10,
+    textAlign: 'center'
+  },
+  subtitle: {
+    fontSize: 16,
+    color: colors.dark,
+    textAlign: 'center',
+    marginBottom: 40,
+    lineHeight: 24
+  },
+  form: {
     backgroundColor: colors.white,
     padding: 20,
     borderRadius: 12,
-    marginBottom: 20,
-    shadowColor: colors.dark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  appTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.darkest,
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    elevation: 4
   },
   label: {
-    fontSize: 16,
-    color: colors.dark,
-  },
-  value: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: colors.darkest,
+    marginBottom: 8
   },
-  actionContainer: {
+  input: {
+    backgroundColor: '#f0f4f8',
+    borderRadius: 8,
+    padding: 15,
     marginBottom: 20,
-  },
-  resultHeader: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.darkest,
-    marginBottom: 5,
-  },
-  topicBadge: {
-    color: colors.primary,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    fontSize: 12,
-    marginBottom: 15,
-  },
-  subHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.dark,
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.lightest,
-    paddingBottom: 5,
-  },
-  bulletDot: {
-    fontSize: 18,
-    color: colors.primary,
-    marginRight: 8,
-    lineHeight: 22,
-  },
-  bulletText: {
-    fontSize: 15,
-    color: '#333',
-    lineHeight: 22,
-    flex: 1,
-  },
+    borderWidth: 1,
+    borderColor: '#e1e8ed',
+    color: colors.darkest
+  }
 });
-
 
 export default WelcomeSetupPage;

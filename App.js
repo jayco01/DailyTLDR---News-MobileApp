@@ -1,24 +1,35 @@
 import React, { useContext } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+// Contexts
 import { AuthProvider, AuthContext } from './src/contexts/AuthContext';
 import { SettingsProvider } from './src/contexts/SettingsContext';
 import { colors } from './src/theme/colors';
 
+// Screens
 import HomePage from './src/screens/01_HomePage';
-// import CustomizationScreen from './src/screens/03_CustomizationPage';
 import WelcomeSetupPage from './src/screens/00_WelcomeSetupPage';
+// import CustomizationScreen from './src/screens/03_CustomizationPage';
 
-// todo: placeholder for future implementation
-const BookmarksScreen = () => <View style={{flex:1, justifyContent:'center'}}><ActivityIndicator /></View>;
-const SettingsScreen = () => <View style={{flex:1, justifyContent:'center'}}><ActivityIndicator /></View>;
+// Placeholders for your teammates
+const BookmarksScreen = () => (
+  <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
+    <Text style={{color: colors.dark}}>Bookmarks Page (Coming Soon)</Text>
+  </View>
+);
+const SettingsScreen = () => (
+  <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
+    <Text style={{color: colors.dark}}>Settings Page (Coming Soon)</Text>
+  </View>
+);
 
 const Tab = createBottomTabNavigator();
 
+// Main App Tabs
 const MainTabs = () => {
   return (
     <Tab.Navigator
@@ -26,15 +37,11 @@ const MainTabs = () => {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: 'gray',
-        tabBarStyle:
-          {
-            paddingBottom: 5,
-            height: 60
-          },
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
+        tabBarStyle: { height: 60, paddingBottom: 8, paddingTop: 8 },
+        tabBarIcon: ({ color, size }) => {
+          let iconName = 'circle';
           if (route.name === 'Home') iconName = 'home';
-          else if (route.name === 'Bookmarks') iconName = 'collections-bookmark';
+          else if (route.name === 'Bookmarks') iconName = 'bookmark';
           else if (route.name === 'Customize') iconName = 'tune';
           else if (route.name === 'Settings') iconName = 'settings';
           return <Icon name={iconName} size={size} color={color} />;
@@ -49,16 +56,28 @@ const MainTabs = () => {
   );
 };
 
+// Logic Switcher
 const RootNavigator = () => {
   const { user, isNewUser, loading } = useContext(AuthContext);
 
-  if (loading) return <View style={{flex:1, justifyContent:'center'}}><ActivityIndicator size="large" color={colors.primary}/></View>;
-
-  if (!user || isNewUser) return <WelcomeSetupPage />;
+  if (loading) {
+    return (
+      <View style={
+        {
+          flex:1,
+          justifyContent:'center',
+          alignItems:'center',
+          backgroundColor: colors.background
+        }
+      }>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
-      <MainTabs />
+      {(!user || isNewUser) ? <WelcomeSetupPage /> : <MainTabs />}
     </NavigationContainer>
   );
 };
