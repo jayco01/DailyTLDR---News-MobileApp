@@ -10,7 +10,7 @@ import {
 import { getLatestDigest, triggerManualDigest } from '../services/DigestService';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
-import AppButton from './AppButton';
+import AppButton from '../components/AppButton';
 
 export const WelcomeSetupPage = () => {
   const {user, profile, loading, isNewUser, createProfile} = useContext(AuthContext);
