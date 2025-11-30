@@ -1,6 +1,4 @@
-import {getFirestore, doc, setDoc, deleteDoc, serverTimestamp} from '@react-native-firebase/firestore';
-
-const db = getFirestore();
+import firestore from '@react-native-firebase/firestore';
 
 /**
  * Save a digest to the user's bookmarks.
@@ -10,15 +8,17 @@ const db = getFirestore();
 export const addBookmark = async (userId, digest) => {
   try {
     // original digestId will be used as the id in the bookmark collection to prevent duplication
-    const bookmarkRef = doc(db, 'profiles', userId, 'bookmarks', digest.id);
+    await firestore()
+      .collection('profiles')
+      .doc(userId)
+      .collection('bookmarks')
+      .doc(digest.id)
+      .set({
+        ...digest,
+        savedAt: firestore.FieldValue.serverTimestamp()
+      });
 
-    await setDoc(bookmarkRef, {
-      ...digest,
-      savedAt: serverTimestamp()
-    });
-
-    console.log("Bookmark added");
-
+    console.log("Bookmark added!");
     return true;
   } catch (e) {
     console.error("Failed to add the article to bookmark:",e);
@@ -33,8 +33,13 @@ export const addBookmark = async (userId, digest) => {
  */
 export const removeBookmark = async (userId, digestId) => {
   try {
-    const bookmarkRef = doc(db, 'profiles', userId, 'bookmarks', digestId);
-    await deleteDoc(bookmarkRef);
+    await firestore()
+      .collection('profiles')
+      .doc(userId)
+      .collection('bookmarks')
+      .doc(digestId)
+      .delete();
+
     console.log("Bookmark removed!");
     return true;
   } catch (e) {

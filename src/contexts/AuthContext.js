@@ -1,11 +1,10 @@
-import { createContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signInAnonymously} from '@react-native-firebase/auth';
-import {doc, getDoc, setDoc, updateDoc, serverTimestamp} from '@react-native-firebase/firestore';
-import {auth, db} from '../config/firebase';
+import React, { createContext, useEffect, useState } from 'react';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 export const AuthContext = createContext();
 
-export function AuthProvider({children}){
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,67 +12,67 @@ export function AuthProvider({children}){
   const isNewUser = !loading && user && !profile;
 
   useEffect(() => {
-    setLoading(true); // start in the loading screen
-
-    //listen to the changes of authentication
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const subscriber = auth().onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
 
-        try{ // check if user exist in the database
-          const userRef = doc(db, 'profiles', currentUser.uid);
-          const snapShot = await getDoc(userRef);
+        try {
+          const userDoc = await firestore()
+            .collection('profiles')
+            .doc(currentUser.uid)
+            .get();
 
-          if (snapShot.exists()) {
-            setProfile(snapShot.data());
+          if (userDoc.exists) {
+            setProfile(userDoc.data());
           } else {
             setProfile(null);
           }
-
         } catch (e) {
-          console.error(`Anonymous Authentication Failed -, ${e}`);
+          console.error("Failed to fetch profile:", e);
         }
-
-      } else { // if user does not exist then sign in anonymously
+      } else {
+        setUser(null);
+        setProfile(null);
+        // If logged out, force Anonymous Sign-in immediately
         try {
-          await signInAnonymously(auth);
+          await auth().signInAnonymously();
         } catch (e) {
-          console.error(`Anonymous Authentication Failed - ${e}`);
+          console.error("Anonymous Sign-in failed:", e);
         }
       }
+
       setLoading(false);
     });
 
-  return unsubscribe;
+    return subscriber;
   }, []);
-
 
   const createProfile = async (username) => {
     if (!user) throw new Error('User does not exist');
 
     const newProfile = {
-      userId : user.uid,
+      userId: user.uid,
       publicUsername: username,
-      topic: "Technology", // default topic
-      gemini_settings: { // default gemini prompt
+      topic: "Technology",
+      gemini_settings: {
         tone: "Informative",
         format: 'Concise'
       },
-      createdAt: serverTimestamp(),
+      // Native Syntax for Timestamp
+      createdAt: firestore.FieldValue.serverTimestamp(),
     };
 
-    const userRef = doc(db, 'profiles', user.uid);
-    await setDoc(userRef, newProfile);
+    await firestore().collection('profiles').doc(user.uid).set(newProfile);
     setProfile(newProfile);
   };
 
   const updateProfile = async (data) => {
     if (!user) return;
 
-    const userRef = doc(db, 'profiles', user.uid);
-    await updateDoc(userRef, data);
+    await firestore().collection('profiles').doc(user.uid).update(data);
+
     setProfile(prev => ({ ...prev, ...data }));
-  }
+  };
 
   return (
     <AuthContext.Provider value={{
@@ -87,7 +86,4 @@ export function AuthProvider({children}){
       {children}
     </AuthContext.Provider>
   );
-
 }
-
-
