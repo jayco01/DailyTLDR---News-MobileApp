@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { colors } from '../theme/colors';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const HomeArticleCard = ({ article }) => {
   const openLink = () => {
@@ -28,11 +29,9 @@ const HomeArticleCard = ({ article }) => {
       <Text style={styles.synopsis}>{article.synopsis}</Text>
 
       <View style={styles.footer}>
-        <Text style={styles.takeawayLabel}>Key Takeaway:</Text>
-        <Text style={styles.takeawayText}>{article.key_takeaway}</Text>
-
-        <TouchableOpacity onPress={openLink}>
-          <Text style={styles.readMoreText}>Read Source -></Text>
+        <TouchableOpacity style={styles.source} onPress={openLink}>
+          <Text style={styles.readMoreText}>Read Source </Text>
+          <Icon name="open-in-new" size={16} color={colors.primary}/>
         </TouchableOpacity>
       </View>
     </View>
@@ -99,9 +98,11 @@ const styles = StyleSheet.create({
   },
   readMoreText: {
     color: colors.light,
-    fontWeight: '600',
-    textAlign: 'right'
+    fontWeight: '600'
   },
+  source: {
+    flexDirection: "row"
+  }
 });
 
 export default HomeArticleCard;
