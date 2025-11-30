@@ -47,3 +47,27 @@ export const removeBookmark = async (userId, digestId) => {
     throw e;
   }
 };
+
+/**
+ * Fetch all bookmarks for a user.
+ * Returns an array of digest objects, sorted by saved date (newest first).
+ * @param {string} userId - Current User ID
+ */
+export const getBookmarks = async (userId) => {
+  try {
+    const snapshot = await firestore()
+      .collection('profiles')
+      .doc(userId)
+      .collection('bookmarks')
+      .orderBy('savedAt', 'desc')
+      .get();
+
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (e) {
+    console.error("Failed to fetch bookmarks:", e);
+    throw e;
+  }
+};
