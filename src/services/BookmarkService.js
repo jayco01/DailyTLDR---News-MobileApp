@@ -22,4 +22,20 @@ export const addBookmark = async (userId, digest) => {
     console.error("Failed to add the article to bookmark:",e);
     throw e;
   }
-}
+};
+
+/**
+ * Remove a digest from bookmarks.
+ * @param {string} userId - Current User ID
+ * @param {string} digestId - The ID of the digest to remove
+ */
+export const removeBookmark = async (userId, digestId) => {
+  try {
+    const bookmarkRef = doc(db, 'profiles', userId, 'bookmarks', digestId);
+    await deleteDoc(bookmarkRef);
+    console.log("Bookmark removed!");
+  } catch (e) {
+    console.error("Failed to remove the article to bookmark:", e);
+    throw e;
+  }
+};
