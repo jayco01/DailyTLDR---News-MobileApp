@@ -12,6 +12,30 @@ const db = admin.firestore();
 const {getArticles, scrapeArticles} = require("./apiHelpers");
 const {generateSummary} = require("./digestHelpers");
 
+const checkRateLimit = async (userId) => {
+  const lastDigestSnap = await db.collection("digests")
+    .where("userId", "==", userId)
+    .orderBy("createdAt", "desc")
+    .limit(1)
+    .get();
+
+  if (lastDigestSnap.empty) return true; // continue if there is no digest today (i.e. user manually ask for digest before 5am)
+
+  const lastDigest = lastDigestSnap.docs[0].data();
+  if (!lastDigest.createdAt) return true; // continue if createdAt field is empty
+
+  const lastRun = lastDigest.createdAt.toDate();
+  const now = new Date();
+  const diffMinutes = (now - lastRun) / 1000 / 60;
+
+  if (diffMinutes < 15) {
+    throw new HttpsError(
+      "resource-exhausted",
+      `Please wait ${Math.ceil(15 - diffMinutes)} minutes before refreshing.`
+    );
+  }
+  return true;
+};
 
 const generateDigestForUser = async (userId) => {
   logger.info(`Starting digest generation for user: ${userId}`)
@@ -103,9 +127,13 @@ exports.generateManualDigest = onCall(
     }
 
     try {
+      // Check Rate Limit
+      await checkRateLimit(request.auth.uid);
+
       const result = await generateDigestForUser(request.auth.uid);
       return result;
     } catch (e) {
+      if (e.code) throw e;
       logger.error("Failed to Manually generate Digest:", e);
       throw new HttpsError("internal", e.message);
     }

@@ -57,7 +57,7 @@ const AuthStatus = () => {
 
         <View style={styles.infoRow}>
           <Text style={styles.label}>User Status:</Text>
-          <Text style={styles.value}>{isNewUser ? 'Needs Profile' : '✅ Active'}</Text>
+          <Text style={styles.value}>{isNewUser ? 'Needs Profile' : 'Active'}</Text>
         </View>
 
         <View style={styles.infoRow}>
@@ -85,18 +85,19 @@ const AuthStatus = () => {
 
       {/* RESULTS AREA */}
       {digestData && (
-        <ScrollView style={styles.resultBox} showsVerticalScrollIndicator={false}>
-          <Text style={styles.resultHeader}>Morning Briefing</Text>
-          <Text style={styles.topicBadge}>{digestData.topic}</Text>
+        <View style={{ flex: 1, marginTop: 20 }}>
+          <Text style={styles.resultHeader}>
+            Morning Brief: {digestData.topic}
+          </Text>
 
-          <Text style={styles.subHeader}>⚡ Key Takeaways</Text>
-          {digestData.overall_key_takeaways && digestData.overall_key_takeaways.map((point, index) => (
-            <View key={index} style={styles.bulletRow}>
-              <Text style={styles.bulletDot}>•</Text>
-              <Text style={styles.bulletText}>{point}</Text>
-            </View>
-          ))}
-        </ScrollView>
+          <FlatList
+            data={digestData.article_sections}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => <ArticleCard article={item} />}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       )}
     </SafeAreaView>
   );
@@ -153,13 +154,6 @@ const styles = StyleSheet.create({
   actionContainer: {
     marginBottom: 20,
   },
-  resultBox: {
-    flex: 1,
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 20,
-    elevation: 2,
-  },
   resultHeader: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -181,10 +175,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.lightest,
     paddingBottom: 5,
-  },
-  bulletRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
   },
   bulletDot: {
     fontSize: 18,

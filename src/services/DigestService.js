@@ -6,11 +6,13 @@ import {
   where,
   orderBy,
   limit,
-  getDocs
+  getDocs,
+  Timestamp,
 } from '@react-native-firebase/firestore';
 
 const db = getFirestore();
 const functions = getFunctions();
+const NUM_OF_DISPLAYED_DAYS = 7
 
 export const triggerManualDigest = async () => {
   try {
@@ -27,18 +29,23 @@ export const getLatestDigest = async (userId) => {
   try{
     const digestsRef = collection(db, 'digests');
 
+    const numberOfDaysAgo = new Date();
+    numberOfDaysAgo.setDate(numberOfDaysAgo.getDate() - NUM_OF_DISPLAYED_DAYS);
+    const firestoreDate = Timestamp.fromDate(numberOfDaysAgo);
+
     const queryToGetDigest = query(
       digestsRef,
       where('userId', '==', userId),
-      orderBy('createdAt', 'desc'),
-      limit(1)
+      where('createdAt', '>=', firestoreDate),
+      orderBy('createdAt', 'desc')
     );
 
     const snapshot = await getDocs(queryToGetDigest);
 
-    if (snapshot.empty) return null;
-
-    return snapshot.docs[0].data();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
   } catch (e) {
     console.error("Failed to getLatestDigest: ", e);

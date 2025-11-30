@@ -35,7 +35,7 @@ const ArticleCard = ({article}) => {
 
       {/* Footer: Key Takeaway & Link */}
       <View style={styles.footer}>
-        <Text style={styles.takeawayLabel}>💡 Key Takeaway:</Text>
+        <Text style={styles.takeawayLabel}>Key Takeaway:</Text>
         <Text style={styles.takeawayText}>{article.key_takeaway}</Text>
 
         <TouchableOpacity onPress={openLink} style={styles.readMoreBtn}>
