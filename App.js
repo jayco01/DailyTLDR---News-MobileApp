@@ -9,9 +9,9 @@ import { AuthProvider, AuthContext } from './src/contexts/AuthContext';
 import { SettingsProvider } from './src/contexts/SettingsContext';
 import { colors } from './src/theme/colors';
 
-// import HomePage from './src/screens/01_HomePage';
+import HomePage from './src/screens/01_HomePage';
 // import CustomizationScreen from './src/screens/03_CustomizationPage';
-import {WelcomeSetupPage} from './src/screens/00_WelcomeSetupPage';
+import WelcomeSetupPage from './src/screens/00_WelcomeSetupPage';
 
 // todo: placeholder for future implementation
 const BookmarksScreen = () => <View style={{flex:1, justifyContent:'center'}}><ActivityIndicator /></View>;
@@ -41,7 +41,7 @@ const MainTabs = () => {
         },
       })}
     >
-      {/*<Tab.Screen name="Home" component={HomePage} />*/}
+      <Tab.Screen name="Home" component={HomePage} />
       <Tab.Screen name="Bookmarks" component={BookmarksScreen} />
       {/*<Tab.Screen name="Customize" component={CustomizationScreen} />*/}
       <Tab.Screen name="Settings" component={SettingsScreen} />

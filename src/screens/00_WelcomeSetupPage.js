@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import AppButton from '../components/AppButton';
 
-export const WelcomeSetupPage = () => {
+const WelcomeSetupPage = () => {
   const {user, profile, loading, isNewUser, createProfile} = useContext(AuthContext);
   const [isCreating, setIsCreating] = useState(false);
   const [digestData, setDigestData] = useState(null);
@@ -166,3 +166,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+
+export default WelcomeSetupPage;
