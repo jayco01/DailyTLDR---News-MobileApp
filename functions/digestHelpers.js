@@ -33,7 +33,7 @@ const generateSummary = async (markdownContent, tone = "Informative", format = "
 
   try {
     const result = await genAI.models.generateContent({
-      model: process.env.GEMINI_MODEL || "gemini-2.0-flash-lite",
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash-lite",
       contents: `
         You are an expert news editor. Summarize the following article text.
         
