@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import { colors } from '../theme/colors';
 import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SettingsContext } from '../contexts/SettingsContext';
 
 const toneOptions = ['Informative', 'Casual', 'Professional', 'Enthusiastic', 'Witty'];
 const formatOptions = ['A concise summary', 'A single paragraph', 'Bullet points', 'A detailed explanation', "Explain like I'm 5"];
 
 const CustomizationPage = () => {
   const { profile, updateProfile, loading } = useAuth();
+  const { theme } = useContext(SettingsContext);
 
   const [topic, setTopic] = useState('');
   const [tone, setTone] = useState('');
@@ -47,33 +49,34 @@ const CustomizationPage = () => {
   if (loading || !profile) return null;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
-        <Text style={styles.title}>Your Profile</Text>
-        <Text style={styles.label}>Your Username</Text>
-        <Text style={styles.usernameText}>@{profile.publicUsername}</Text>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
+        <Text style={[styles.title, { color: theme.text }]}>Your Profile</Text>
+        <Text style={[styles.label, { color: theme.text }]}>Your Username</Text>
+        <Text style={[styles.usernameText, { color: theme.mutedText }]}>@{profile.publicUsername}</Text>
 
-        <Text style={styles.label}>Your Daily Topic</Text>
+        <Text style={[styles.label, { color: theme.text }]}>Your Daily Topic</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.card, borderColor: theme.border, color: theme.text }]}
           value={topic}
           onChangeText={setTopic}
           placeholder="Enter topic"
+          placeholderTextColor={theme.mutedText}
         />
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <Text style={styles.label}>AI Summary Tone</Text>
-        <View style={styles.pickerContainer}>
-          <Picker selectedValue={tone} onValueChange={setTone} style={styles.picker}>
+        <Text style={[styles.label, { color: theme.text }]}>AI Summary Tone</Text>
+        <View style={[styles.pickerContainer, { borderColor: theme.border, backgroundColor: theme.card }]}>
+          <Picker selectedValue={tone} onValueChange={setTone} style={[styles.picker, { color: theme.text }]}>
             {toneOptions.map((opt) => (
               <Picker.Item key={opt} label={opt} value={opt} />
             ))}
           </Picker>
         </View>
 
-        <Text style={styles.label}>AI Summary Format</Text>
-        <View style={styles.pickerContainer}>
-          <Picker selectedValue={format} onValueChange={setFormat} style={styles.picker}>
+        <Text style={[styles.label, { color: theme.text }]}>AI Summary Format</Text>
+        <View style={[styles.pickerContainer, { borderColor: theme.border, backgroundColor: theme.card }]}>
+          <Picker selectedValue={format} onValueChange={setFormat} style={[styles.picker, { color: theme.text }]}>
             {formatOptions.map((opt) => (
               <Picker.Item key={opt} label={opt} value={opt} />
             ))}
@@ -107,7 +110,7 @@ const styles = StyleSheet.create({
     borderColor: colors.light,
     color: colors.darkest,
   },
-  errorText: { color: 'red', marginBottom: 15 },
+  errorText: { color: colors.error, marginBottom: 15 },
   pickerContainer: {
     marginBottom: 20,
     borderWidth: 1,

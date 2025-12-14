@@ -2,11 +2,13 @@ import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, Alert, TextInput} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '../contexts/AuthContext';
+import { SettingsContext } from '../contexts/SettingsContext';
 import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
 
 const WelcomeSetupPage = () => {
   const { createProfile } = useContext(AuthContext);
+  const { theme } = useContext(SettingsContext);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,19 +30,19 @@ const WelcomeSetupPage = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Daily TL;DR</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: theme.text }]}>Welcome to Daily TL;DR</Text>
+        <Text style={[styles.subtitle, { color: theme.mutedText }]}>
           Your personalized, distraction-free news digest. Let's get you set up.
         </Text>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Choose a Username</Text>
+        <View style={[styles.form, { backgroundColor: theme.card }]}>
+          <Text style={[styles.label, { color: theme.text }]}>Choose a Username</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
             placeholder="e.g. JohnDoe99"
-            placeholderTextColor="#999"
+            placeholderTextColor={theme.mutedText}
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
@@ -94,12 +96,12 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   input: {
-    backgroundColor: '#f0f4f8',
+    backgroundColor: colors.background,
     borderRadius: 8,
     padding: 15,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#e1e8ed',
+    borderColor: colors.background,
     color: colors.darkest
   }
 });
