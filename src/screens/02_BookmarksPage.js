@@ -101,10 +101,6 @@ const BookmarksPage = () => {
           <Text style={styles.pillText}>Saved</Text>
         </View>
 
-        <TouchableOpacity onPress={() => handleRemove(item.id)} style={styles.footerAction}>
-          <Text style={[styles.footerActionText, { color: theme.mutedText }]}>Remove</Text>
-          <Icon name="chevron-right" size={18} color={theme.mutedText} />
-        </TouchableOpacity>
       </View>
     </View>
   );
