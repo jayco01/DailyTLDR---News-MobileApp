@@ -12,7 +12,7 @@ const SettingsPage = () => {
 
   const switchTrack = {
     false: theme.border,
-    true: colors.primary,
+    true: colors.darkest,
   };
   const switchThumb = colors.white;
 

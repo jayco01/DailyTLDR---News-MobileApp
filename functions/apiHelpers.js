@@ -24,10 +24,10 @@ const getArticles = async (topic) => {
   /***
     Endpoint: /v2/everything
     Parameters:
-    q: The user's topic
-    from: Only articles from the last 24 hours
-    sortBy: 'popularity' finds the most popular articles first
-    language: 'en' restricts to English
+      q: The user's topic
+      from: Only articles from the last 24 hours
+      sortBy: 'popularity' finds the most popular articles first
+      language: 'en' restricts to English
   ***/
   const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(sanitizedTopic)}&from=${fromDate}&sortBy=popularity&language=en&pageSize=5&apiKey=${apiKey}`;
 
