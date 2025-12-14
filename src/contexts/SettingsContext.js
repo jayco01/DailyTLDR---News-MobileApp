@@ -1,6 +1,7 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useMemo } from 'react';
 import Tts from 'react-native-tts';
 import { AppState } from 'react-native';
+import { colors } from '../theme/colors';
 
 export const SettingsContext = createContext();
 const TTS_RATE = 0.5;
@@ -55,10 +56,36 @@ export const SettingsProvider = ({ children }) => {
     setIsTTSEnabled(prev => !prev);
   };
 
+  const toggleTheme = () => setIsDarkMode(prev => !prev);
+
+  const theme = useMemo(() => {
+    const dark = {
+      background: colors.darkest,
+      card: colors.dark,
+      text: colors.white,
+      mutedText: colors.lightest,
+      icon: colors.white,
+      border: colors.primary,
+    };
+
+    const light = {
+      background: colors.background,
+      card: colors.white,
+      text: colors.darkest,
+      mutedText: colors.textLight,
+      icon: colors.dark,
+      border: colors.background,
+    };
+
+    return isDarkMode ? dark : light;
+  }, [isDarkMode]);
+
   return (
     <SettingsContext.Provider value={{
       isDarkMode,
       setIsDarkMode,
+      toggleTheme,
+      theme,
       isTTSEnabled,
       toggleTTS,
       speak,

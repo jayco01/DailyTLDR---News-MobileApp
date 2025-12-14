@@ -7,19 +7,30 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { AuthContext } from '../contexts/AuthContext';
 import { SettingsContext } from '../contexts/SettingsContext';
 import { getWeeklyDigests, triggerManualDigest } from '../services/DigestService';
-import { addBookmark } from '../services/BookmarkService';
+import { addBookmark, removeBookmark, getBookmarks } from '../services/BookmarkService';
 import HomeArticleCard from '../components/HomeArticleCard';
 import { colors } from '../theme/colors';
 
 const HomePage = () => {
   const { user, profile } = useContext(AuthContext);
-  const { isTTSEnabled, speak, stopSpeaking, isSpeaking } = useContext(SettingsContext);
+  const { isTTSEnabled, speak, stopSpeaking, isSpeaking, theme } = useContext(SettingsContext);
 
   const [allDigests, setAllDigests] = useState([]);
   const [dailyDigests, setDailyDigests] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
+
+  const loadBookmarkedIds = async () => {
+    if (!user) return;
+    try {
+      const saved = await getBookmarks(user.uid);
+      setBookmarkedIds(new Set(saved.map(b => b.id)));
+    } catch (e) {
+      setBookmarkedIds(new Set());
+    }
+  };
 
   const loadData = async () => {
     if (!user) return;
@@ -53,6 +64,7 @@ const HomePage = () => {
 
   useEffect(() => {
     loadData();
+    loadBookmarkedIds();
     }, [user]);
 
   // Audio Cleanup on Blur
@@ -71,7 +83,10 @@ const HomePage = () => {
         profile?.gemini_settings?.tone,
         profile?.gemini_settings?.format
       );
-      setTimeout(() => loadData(), 2000);
+      setTimeout(async () => {
+        await loadData();
+        await loadBookmarkedIds();
+      }, 2000);
     } catch (error) {
       Alert.alert("Limit Reached", error.message);
       setRefreshing(false);
@@ -81,9 +96,33 @@ const HomePage = () => {
   const handleBookmark = async () => {
     const current = dailyDigests[currentIndex];
 
-    if (current) {
-      await addBookmark(user.uid, current);
-      Alert.alert("Saved", "Digest bookmarked!");
+    if (current && user) {
+      const digestId = current.id;
+      if (!digestId) return;
+
+      const isSavedNow = bookmarkedIds.has(digestId);
+
+      try {
+        if (isSavedNow) {
+          await removeBookmark(user.uid, digestId);
+          setBookmarkedIds(prev => {
+            const next = new Set(prev);
+            next.delete(digestId);
+            return next;
+          });
+          Alert.alert("Removed", "Bookmark removed.");
+        } else {
+          await addBookmark(user.uid, current);
+          setBookmarkedIds(prev => {
+            const next = new Set(prev);
+            next.add(digestId);
+            return next;
+          });
+          Alert.alert("Saved", "Digest bookmarked!");
+        }
+      } catch (e) {
+        Alert.alert("Error", "Could not update bookmark.");
+      }
     }
   };
 
@@ -103,54 +142,55 @@ const HomePage = () => {
   const goForward = () => { if (currentIndex > 0) setCurrentIndex(c => c - 1); };
 
   const currentDigest = dailyDigests[currentIndex];
+  const isSaved = currentDigest && bookmarkedIds.has(currentDigest.id);
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       {/* HEADER */}
-      <View style={styles.topBar}>
-        <Text style={styles.appTitle}>Daily TL;DR</Text>
+      <View style={[styles.topBar, { backgroundColor: theme.background }]}>
+        <Text style={[styles.appTitle, { color: theme.text }]}>Daily TL;DR</Text>
         <View style={styles.actionRow}>
 
           {/* TTS Toggle */}
           {isTTSEnabled && (
             <TouchableOpacity onPress={handleAudio} style={styles.iconBtn}>
-              <Icon name={isSpeaking ? "stop-circle" : "volume-up"} size={24} color={isSpeaking ? colors.error : colors.dark} />
+              <Icon name={isSpeaking ? "stop-circle" : "volume-up"} size={24} color={isSpeaking ? colors.error : theme.icon} />
             </TouchableOpacity>
           )}
 
           {/* Refresh */}
           <TouchableOpacity onPress={handleRefresh} style={styles.iconBtn}>
-            {refreshing ? <ActivityIndicator size="small" color={colors.dark}/> : <Icon name="refresh" size={24} color={colors.dark} />}
+            {refreshing ? <ActivityIndicator size="small" color={theme.icon}/> : <Icon name="refresh" size={24} color={theme.icon} />}
           </TouchableOpacity>
 
           {/* Bookmark */}
           <TouchableOpacity onPress={handleBookmark} style={styles.iconBtn}>
-            <Icon name="bookmark-border" size={24} color={colors.dark} />
+            <Icon name={isSaved ? "bookmark" : "bookmark-border"} size={24} color={theme.icon} />
           </TouchableOpacity>
         </View>
       </View>
 
       {/* DIGEST NAVIGATION */}
-      <View style={styles.dateNav}>
+      <View style={[styles.dateNav, { backgroundColor: theme.card }]}>
         <TouchableOpacity onPress={goBack} disabled={currentIndex >= dailyDigests.length - 1}>
-          <Icon name="chevron-left" size={30} color={currentIndex >= dailyDigests.length - 1 ? '#ccc' : colors.primary} />
+          <Icon name="chevron-left" size={30} color={currentIndex >= dailyDigests.length - 1 ? colors.lightest : colors.primary} />
         </TouchableOpacity>
 
         <View style={styles.dateBadge}>
-          <Text style={styles.dateText}>{currentDigest ? currentDigest.displayDate : "No Data"}</Text>
+          <Text style={[styles.dateText, { color: theme.text }]}>{currentDigest ? currentDigest.displayDate : "No Data"}</Text>
         </View>
 
         <TouchableOpacity onPress={goForward} disabled={currentIndex === 0}>
-          <Icon name="chevron-right" size={30} color={currentIndex === 0 ? '#ccc' : colors.primary} />
+          <Icon name="chevron-right" size={30} color={currentIndex === 0 ? colors.lightest : colors.primary} />
         </TouchableOpacity>
       </View>
 
       {/* FEED */}
       {!currentDigest ? (
         <View style={styles.center}>
-          <Text style={{color: '#666', marginBottom: 20}}>No digest for this day.</Text>
+          <Text style={{color: theme.mutedText, marginBottom: 20}}>No digest for this day.</Text>
         </View>
       ) : (
         <FlatList
@@ -162,16 +202,16 @@ const HomePage = () => {
           ListHeaderComponent={
             <View style={{ marginBottom: 20 }}>
               <Text style={styles.topicLabel}>{currentDigest.topic.toUpperCase()}</Text>
-              <Text style={styles.sectionTitle}>Today's Key Takeaways</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Today's Key Takeaways</Text>
 
               {currentDigest.overall_key_takeaways.map((point, i) => (
                 <View key={i} style={styles.bulletRow}>
                   <Text style={styles.bullet}>•</Text>
-                  <Text style={styles.bulletText}>{point}</Text>
+                  <Text style={[styles.bulletText, { color: theme.text }]}>{point}</Text>
                 </View>
               ))}
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
             </View>
           }
         />
@@ -250,14 +290,14 @@ const styles = StyleSheet.create({
     lineHeight: 22
   },
   bulletText: {
-    color: '#333',
+    color: colors.darkest,
     fontSize: 15,
     lineHeight: 22,
     flex: 1
   },
   divider: {
     height: 1,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.background,
     marginVertical: 15
   },
 });
