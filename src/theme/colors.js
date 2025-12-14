@@ -3,7 +3,7 @@ export const colors = {
   light:'#6fa8dc',
   primary:'#4583bb',//  Good for main buttons
   dark:'#3075b3',
-  darkest:'#0b5394',// headers/text
+  darkest:'#03172b',// headers/text
 
   background:'#f0f4f8',// Very light blue-grey for app background
   white:'#ffffff',
