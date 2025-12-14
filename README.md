@@ -64,7 +64,7 @@ Large Language Models are probabilistic. We enforced **Determinism** by strictly
 ### **Installation**
 
 1. **Clone the repository:**  
-   git clone \[https://github.com/your-repo/daily-tldr.git\](https://github.com/your-repo/daily-tldr.git)  
+   git clone [\[https://github.com/your-repo/daily-tldr.git\](https://github.com/your-repo/daily-tldr.git) ](https://github.com/jayco01/DailyTLDR---News-MobileApp.git) 
    cd daily-tldr
 
 2. **Install Dependencies:**  
